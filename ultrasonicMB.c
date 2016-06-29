@@ -182,10 +182,11 @@ int getDistance(int unit){
 
 
 
-void main(void){
+int main(void){
 	while(1==1){
 		printf("DISTANCE IS: %d \n",getDistance(1));
 		sleep(1);
 	}
+	return 1;
 	
 }
