@@ -156,6 +156,64 @@ void gpioWrite(int pin, int val){
 	close(fd);
 }
 
+int gpioQuickRead(int pin){
+	//Reads and returns the value on gpio pin "pin"
+	//Make sure you use the linux pin number, not the pin number on the header. Ex. Header pin 25 is linux pin 340.
+	
+	int fd;
+	char buf[MAX_BUF]; 
+	int gpio = pin;
+	//Reads the value on the pin
+	char value;
+	sprintf(buf, "/sys/class/gpio/gpio%d/value",gpio);
+	fd = open(buf,O_RDONLY);
+	lseek(fd, 0, SEEK_SET);
+	read(fd, &value,1);
+	close(fd);
+	int val = -1;
+	if(value == '0')
+		val = 0;
+	if(value == '1')
+		val = 1;
+	return val;
+}
+
+void gpioOpen(int pin){
+	int fd;
+	char buf[MAX_BUF]; 
+	int gpio = pin;
+	//Reads the value on the pin
+	char value;
+	//Mimics the "echo <pin> > /sys/class/gpio/export" command
+	fd = open("/sys/class/gpio/export",O_WRONLY);
+	sprintf(buf, "%d",gpio);
+	write(fd, buf , strlen(buf));
+	close(fd);
+	//Mimics the "echo in > /sys/class/gpio/gpio<pin>/direction" command
+	sprintf(buf, "/sys/class/gpio/gpio%d/direction",gpio);
+	fd = open(buf,O_WRONLY);
+	write(fd, "in",2);
+	close(fd);
+	//Automatically sets the active low aspect.
+	sprintf(buf, "/sys/class/gpio/gpio%d/active_low",gpio);
+	fd = open(buf,O_WRONLY);
+	write(fd, "0",2);
+	close(fd);
+}
+
+void gpioClose(int pin){
+	int fd;
+	char buf[MAX_BUF]; 
+	int gpio = pin;
+	//Reads the value on the pin
+	char value;
+	//Unexports the pin when done.
+	fd = open("/sys/class/gpio/unexport",O_WRONLY);
+	sprintf(buf,"%d",gpio);
+	write(fd,buf,strlen(buf));
+	close(fd);
+	
+}
 //Experimental Serial functions. Use at your own risk! (You can see working implementations of these in the Minnowboard GPS library)
 /*
 int initport(int fd){
